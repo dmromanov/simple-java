@@ -1,6 +1,7 @@
 /out
 /logs
 /lib
+/build
 /*.iml
 /.idea
 /.*.db
