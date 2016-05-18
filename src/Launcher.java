@@ -1,23 +1,28 @@
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
+
+import java.net.InetSocketAddress;
 
 public class Launcher {
     public static void main(String[] args) throws Exception {
-        Server server = new Server();
+        Server server = new Server(new InetSocketAddress("localhost", 8765));
 
-        SelectChannelConnector connector = new SelectChannelConnector();
-        connector.setPort(8080);
-        server.addConnector(connector);
+        WebAppContext webapp = new WebAppContext();
+        webapp.setContextPath("/");
+        webapp.setResourceBase("src/ee/devclub");
+        webapp.setParentLoaderPriority(true);
+        webapp.setServer(server);
 
-        WebAppContext context = new WebAppContext("webapp", "/");
+        ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setDirectoriesListed(true);
+        resourceHandler.setResourceBase("webapp");
 
-        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-            // fix for Windows, so Jetty doesn't lock files
-            context.getInitParams().put("org.eclipse.jetty.servlet.Default.useFileMappedBuffer", "false");
-        }
-
-        server.setHandler(context);
+        HandlerList handlerList = new HandlerList();
+        handlerList.setHandlers(new Handler[] { webapp, resourceHandler });
+        server.setHandler(handlerList);
         server.start();
     }
 }
